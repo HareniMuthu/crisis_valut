@@ -1,0 +1,82 @@
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum IncidentType {
+  POWER_OUTAGE
+  ROAD_ACCIDENT
+  BUILDING_FIRE
+  FLOOD
+  CIVIL_UNREST
+  CYBERATTACK
+}
+
+enum SeverityLevel {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum IncidentStatus {
+  NOT_VIEWED
+  VIEWED
+  ACTION_TAKEN
+}
+
+model Incident {
+  id           String         @id @default(auto()) @map("_id") @db.ObjectId
+  incident_id  String         @unique
+  userId       String
+  title        String
+  type         IncidentType
+  date         DateTime
+  severity     SeverityLevel
+  location     String
+  description  String
+  attachments  String[]
+  chatMessages ChatMessage[]
+  status       IncidentStatus @default(NOT_VIEWED)
+}
+
+model Prediction {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  incident_id String   @unique
+  prediction  String   // The predicted type of incident
+}
+
+model ContactUs {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  name        String
+  contactInfo String
+  description String
+}
+
+model ChatMessage {
+  id         String    @id @default(auto()) @map("_id") @db.ObjectId
+  incident   Incident  @relation(fields: [incidentId], references: [id])
+  incidentId String    @db.ObjectId
+  senderId   String    // Identifier for the sender
+  message    String
+  timestamp  DateTime  @default(now())
+}
+model QuizQuestion {
+  id       String   @id @default(auto()) @map("_id") @db.ObjectId
+  question String
+  options  String[] // Store options as an array
+  correct  String   // Correct answer
+}
+
+model QuizStat {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   // User ID from Clerk
+  total     Int      // Total questions answered
+  correct   Int      // Correct answers
+  wrong     Int      // Wrong answers
+  timestamp DateTime @default(now())
+}
